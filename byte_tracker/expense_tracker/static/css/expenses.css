@@ -1,0 +1,87 @@
+.expenses-row {
+    font-family: "Work Sans", sans-serif;
+    padding: 1%;
+}
+
+.expense-container {
+    margin-top: 1%;
+    background-color: rgb(27, 27, 27);
+    padding: 1% 1% 1.5% 2%;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.expense-container:hover {
+    cursor: pointer;
+    transform: scale(1.01);
+    transition: 0.3s;
+}
+
+.expense-container hr {
+    margin-top: 0;
+    margin-bottom: 1%;
+}
+
+#addExpenseOffcanvas input, #addExpenseOffcanvas button {
+    margin-top: 2%;
+}
+
+.expense-box {
+    margin-top: 1%;
+    box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.8);
+    padding: 1%;
+    padding-left: 2%;
+    border-radius: 10px;
+    transition: 0.3s;
+    font-family: "Montserrat", sans-serif;
+}
+
+.expense-box:hover {
+    transform: scale(1.01);
+    transition: 0.3s;
+}
+
+.canvas-div-whole {
+    text-align: center;
+    background-color: rgb(15, 15, 15);
+    border-radius: 10px;
+    padding: 2% 0;
+    text-align: center;    
+}
+
+.canvas-div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas-div canvas {
+    width: 90%;
+}
+
+.delete-expense-btn {
+    background-color: rgb(27, 27, 27);
+    border: 1px solid #ff1000;
+    border-radius: 5px;
+    color: #ff1000;
+    transition: 0.3s;
+    font-size: 0.9375rem;
+}
+
+.delete-expense-btn:hover {
+    background-color: #ff1000;
+    color: #fff;
+    transition: 0.3s;
+}
+
+@media (max-width: 768px) {
+    .canvas-div canvas {
+        width: 100%;
+    }
+
+    .expenses-row {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

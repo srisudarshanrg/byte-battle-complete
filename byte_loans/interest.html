@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest and Mutual Funds Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #1e90ff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #1e90ff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005bb5;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        canvas {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Simple & Compound Interest Calculator</h1>
+</header>
+<div class="container">
+    <div class="form-group">
+        <label for="principal">Principal Amount (₹):</label>
+        <input type="number" id="principal" placeholder="Enter principal amount">
+    </div>
+    <div class="form-group">
+        <label for="rate">Annual Interest Rate (%):</label>
+        <input type="number" id="rate" placeholder="Enter annual interest rate">
+    </div>
+    <div class="form-group">
+        <label for="years">Number of Years:</label>
+        <input type="number" id="years" placeholder="Enter number of years">
+    </div>
+    <button onclick="calculateInterest()">Calculate</button>
+    <div class="results">
+        <h3>Results</h3>
+        <p id="simple-interest">Simple Interest: ₹0</p>
+        <p id="compound-interest">Compound Interest: ₹0</p>
+        <canvas id="interestChart" width="400" height="200"></canvas>
+    </div>
+</div>
+<div class="container">
+    <h2>Mutual Funds Section</h2>
+    <p>Explore mutual fund investments based on your financial goals.</p>
+    <button><a href="./mutalfunds.html">Learn More</a></button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function calculateInterest() {
+        const principal = parseFloat(document.getElementById('principal').value);
+        const rate = parseFloat(document.getElementById('rate').value);
+        const years = parseFloat(document.getElementById('years').value);
+
+        fetch('/api/interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ principal, rate, years })
+        })
+        .then(response => response.json())
+        .then(data => {
+        document.getElementById('simple-interest').textContent = `Simple Interest: ₹${data.simple_interest.toFixed(2)}`;
+        document.getElementById('compound-interest').textContent = `Compound Interest: ₹${data.compound_interest.toFixed(2)}`;
+             })
+    .catch(error => console.error('Error:', error));
+
+        if (isNaN(principal) || isNaN(rate) || isNaN(years)) {
+            alert("Please fill in all fields with valid numbers.");
+            return;
+        }
+
+        // Simple Interest
+        const simpleInterest = (principal * rate * years) / 100;
+        document.getElementById('simple-interest').textContent = `Simple Interest: ₹${simpleInterest.toFixed(2)}`;
+
+        // Compound Interest
+        const compoundInterest = principal * Math.pow((1 + rate / 100), years) - principal;
+        document.getElementById('compound-interest').textContent = `Compound Interest: ₹${compoundInterest.toFixed(2)}`;
+
+        // Chart Data
+        const yearsArray = [];
+        const simpleData = [];
+        const compoundData = [];
+        for (let i = 1; i <= years; i++) {
+            yearsArray.push(i);
+            simpleData.push((principal * rate * i) / 100);
+            compoundData.push(principal * Math.pow((1 + rate / 100), i) - principal);
+        }
+
+        renderChart(yearsArray, simpleData, compoundData);
+    }
+
+    function renderChart(labels, simpleData, compoundData) {
+        const ctx = document.getElementById('interestChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Simple Interest',
+                        data: simpleData,
+                        borderColor: '#1e90ff',
+                        borderWidth: 2,
+                        fill: false
+                    },
+                    {
+                        label: 'Compound Interest',
+                        data: compoundData,
+                        borderColor: '#32cd32',
+                        borderWidth: 2,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Years'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Amount (₹)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

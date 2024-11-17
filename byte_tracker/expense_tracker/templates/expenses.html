@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Expenses | ByteTracker
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/expenses.css')}}">
+{% endblock %}
+
+{% block content %}
+    {% if results %}
+        <!-- search expenses offcanvas -->
+        <div class="offcanvas offcanvas-start show text-bg-dark search-results" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasLabel">SEARCH RESULTS</h5>
+                <a href="{{url_for('expenses')}}" class="btn-close" style="background-color: #fff;"></a>
+            </div>
+            <div class="offcanvas-body">
+                <h5>"{{length}}" Results Found</h5>
+                {% for result in results %}                            
+                    <div class="expense-box" style="margin-top: 3%;">
+                        <small>{{result.time}} | {{result.date}}</small>
+                        <h5 style="margin-bottom: 0; margin-top: 0.5%;">{{result.name}}</h5>
+                        <h4 style="margin-bottom: 0; margin-top: 1%;"><i class="fa-solid fa-indian-rupee-sign"></i> {{result.amount}} | {{result.category}}</h4>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- create expense offcanvas -->
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="addExpenseOffcanvas" aria-labelledby="addExpenseOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasExampleLabel">ADD EXPENSE</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" style="background-color: #fff;"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form method="post">
+                <input type="hidden" name="addExpense">
+                <input type="text" name="expenseName" placeholder="Expense Name" class="form-control">
+                <input type="text" name="expenseCategory" placeholder="Expense Category" class="form-control">
+                <input type="number" name="expenseAmount" placeholder="Expense Amount" class="form-control">
+                <input type="color" name="expenseColor" class="form-control form-control-color">
+                <br>
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i> Add Expense</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row expenses-row">
+        <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12 recent-expenses">
+            <h2>Recent Expenses</h2>
+
+            <div class="btn-group gap-1" style="margin-bottom: 1%;">
+                <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#addExpenseOffcanvas"><i class="fa-solid fa-plus"></i> Add Expense</button>
+                <a href="{{url_for('expenses_table')}}" class="btn btn-primary"><i class="fa-solid fa-table"></i> Table View</a>
+            </div>            
+            
+            {% for expense in expenses %}
+                <div class="expense-container">
+                    <div style="display: flex; flex-direction: row; gap: 10px;">
+                        <small>{{expense.date}} <div class="vr"></div> {{expense.time}}</small>
+                        <small>
+                            <form method="post">
+                                <input type="hidden" name="deleteExpenseID" value="{{expense.id}}">
+                                <button type="submit" class="delete-expense-btn"><i class="fa-solid fa-trash-can"></i></button>
+                            </form>
+                        </small>
+                    </div>
+                    <h3>{{expense.name}}</h3>
+                    <h3><i class="fa-solid fa-indian-rupee-sign"></i> {{expense.amount}} <div class="vr"></div> <i class="fa-solid fa-square" style="color: {{expense.color}};"></i> {{expense.category}}</h3>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+            <h2>Analysis</h2>
+            <table class="table table-dark table-striped table-hover">
+                <thead>
+                    <td>Category</td>
+                    <td>Total Expenditure</td>
+                </thead>
+                {% for category in categories %}
+                    <tr>
+                        <td>{{category.category}}</td>
+                        <td><i class="fa-solid fa-indian-rupee-sign"></i> {{category.amount}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <div class="canvas-div-whole">
+                <h5>Expenses Share</h5>
+                <div class="canvas-div">
+                    <canvas id="categoryShareChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // expense share chart js
+        var labels = {{ labels | safe }};
+        var values = {{ values | safe }};
+        var colors = {{ colors | safe }};
+
+        var ctx = document.getElementById("categoryShareChart").getContext("2d");
+        var analysisChart = new Chart(ctx, {
+            type: "pie",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Total Expenditure",
+                        data: values,
+                        backgroundColor: colors,
+                        borderColor: "rgb(255, 255, 255)",
+                    }
+                ]
+            },
+            options: {
+                responsive: false,
+            }
+        });
+    </script>
+{% endblock %}

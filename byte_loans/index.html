@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #343a40;
+      font-family: 'Arial', sans-serif;
+    }
+    .navbar {
+      background-color: #343a40;
+      color: white;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .container {
+      margin-top: 20px;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .modal-content {
+      background-color: #f8f9fa;
+    }
+    .chart-container {
+      width: 100%;
+      height: 400px;
+    }
+    .waiting-for-approval {
+      background-color: #f8d7da;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="text-center my-4">Welcome to Leon Loans</h1>
+
+    <section id="add-loan" class="mb-5">
+      <div class="card p-4">
+        <h3>Apply for a Loan</h3>
+        <form id="takeLoanForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="firstName" class="form-label">First Name</label>
+              <input type="text" id="firstName" class="form-control" placeholder="John">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="lastName" class="form-label">Last Name</label>
+              <input type="text" id="lastName" class="form-control" placeholder="Doe">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="collateral" class="form-label">Collateral</label>
+              <input type="text" id="collateral" class="form-control" placeholder="e.g., House">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="employmentStatus" class="form-label">Employment Status</label>
+              <input type="text" id="employmentStatus" class="form-control" placeholder="e.g., Employed">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="jobCertificate" class="form-label">Job Certificate</label>
+              <input type="file" id="jobCertificate" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="birthCertificate" class="form-label">Birth Certificate</label>
+              <input type="file" id="birthCertificate" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="depositAmount" class="form-label">Money Deposits (€)</label>
+              <input type="number" id="depositAmount" class="form-control" placeholder="e.g., 10000">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="loanAmount" class="form-label">Loan Amount (€)</label>
+              <input type="number" id="loanAmount" class="form-control" placeholder="e.g., 50000">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="loanType" class="form-label">Loan Type</label>
+              <select id="loanType" class="form-select">
+                <option value="Business">Business</option>
+                <option value="Car">Car</option>
+                <option value="House">House</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="applyLoanBtn">Apply for Loan</button>
+        </form>
+      </div>
+    </section>
+
+
+    <section id="waitingApproval" class="mb-5">
+      <div class="card p-4">
+        <h3>Waiting for Approval</h3>
+        <ul id="waitingList" class="list-group">
+
+        </ul>
+      </div>
+    </section>
+
+
+    <section id="track-loans" class="mb-5">
+      <div class="card p-4">
+        <h3>Track Loans</h3>
+        <ul id="loanList" class="list-group">
+
+        </ul>
+      </div>
+    </section>
+
+
+    <section id="charts" class="mb-5">
+      <div class="card p-4">
+        <h3>Analytics</h3>
+        <div class="chart-container">
+          <canvas id="loanChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const loans = [];
+    const pendingLoans = [];
+    const loanTypeColors = {
+      'Business': 'rgba(75, 192, 192, 0.6)',
+      'Car': 'rgba(255, 159, 64, 0.6)',
+      'House': 'rgba(153, 102, 255, 0.6)'
+    };
+    const loanTypeData = {
+      'Business': 0,
+      'Car': 0,
+      'House': 0
+    };
+    let chart;
+
+    document.getElementById('applyLoanBtn').addEventListener('click', () => {
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const collateral = document.getElementById('collateral').value;
+      const employmentStatus = document.getElementById('employmentStatus').value;
+      const depositAmount = parseFloat(document.getElementById('depositAmount').value);
+      const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+      const loanType = document.getElementById('loanType').value;
+
+      if (!firstName || !lastName || !collateral || !employmentStatus || isNaN(depositAmount) || isNaN(loanAmount)) {
+        Swal.fire('Error', 'Please fill all fields correctly.', 'error');
+        return;
+      }
+
+      const loan = {
+        firstName,
+        lastName,
+        collateral,
+        employmentStatus,
+        depositAmount,
+        loanAmount,
+        loanType,
+        status: 'Pending'
+      };
+
+      pendingLoans.push(loan);
+      updatePendingLoanList();
+
+
+      setTimeout(() => {
+        loan.status = 'Approved';
+        loans.push(loan);
+        loanTypeData[loanType] += loan.loanAmount; 
+        updateLoanList();
+        updateLoanChart();
+        updatePendingLoanList();
+        Swal.fire('Loan Approved', 'Your loan has been approved!', 'success');
+      }, 5000);
+    });
+
+
+    function updatePendingLoanList() {
+      const waitingList = document.getElementById('waitingList');
+      waitingList.innerHTML = '';
+      pendingLoans.forEach((loan, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `Pending: ${loan.firstName} ${loan.lastName} - €${loan.loanAmount} <button class="btn btn-danger btn-sm float-end" onclick="removePendingLoan(${index})">Remove</button>`;
+        waitingList.appendChild(li);
+      });
+    }
+
+
+    function removePendingLoan(index) {
+      pendingLoans.splice(index, 1);
+      updatePendingLoanList();
+    }
+
+
+    function updateLoanList() {
+      const loanList = document.getElementById('loanList');
+      loanList.innerHTML = '';
+      loans.forEach((loan, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `${loan.firstName} ${loan.lastName} - €${loan.loanAmount} for ${loan.loanType} <button class="btn btn-danger btn-sm float-end" onclick="removeLoan(${index})">Remove</button>`;
+        loanList.appendChild(li);
+      });
+    }
+
+
+    function removeLoan(index) {
+      loans.splice(index, 1);
+      updateLoanList();
+      updateLoanChart();
+    }
+
+    function updateLoanChart() {
+      const data = {
+        labels: ['Business', 'Car', 'House'],
+        datasets: [{
+          data: [loanTypeData['Business'], loanTypeData['Car'], loanTypeData['House']],
+          backgroundColor: [
+            loanTypeColors['Business'],
+            loanTypeColors['Car'],
+            loanTypeColors['House']
+          ],
+          hoverOffset: 4
+        }]
+      };
+
+      if (chart) {
+        chart.destroy();
+      }
+
+      const ctx = document.getElementById('loanChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'pie',
+        data: data,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `€${context.raw}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
