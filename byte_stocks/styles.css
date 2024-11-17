@@ -1,0 +1,93 @@
+.Stock-card {
+  width: 250px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ddd;
+  padding: 15px;
+  margin: 10px;
+  box-sizing: border-box;
+  color: black;
+}
+.Stock-card:hover {
+  background-color: #3e8e41;
+  color: white;
+}
+
+.Stock-card h1 {
+  text-align: center;
+  font-size: 20px;
+  margin: 0;
+}
+
+.Stock-card .stock-img {
+  width: 110%;
+  height: 60%;
+  border-radius: 4px;
+
+}
+
+.Stock-card h4 {
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.value-container, .high-low-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stock-option {
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  margin: 5px;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+}
+
+.stock-option.selected {
+  opacity: 1;
+  border: 5px solid #008000;
+  position: relative;
+}
+
+.stock-option.selected::after {
+  content: '✔';
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  color: green;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: scale(0.5);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  overflow-x: hidden;
+}
+.modal-body ul {
+  padding-left: 20px;
+  list-style-type: none;
+}
+
+.modal-body ul li {
+  padding: 5px 0;
+}
